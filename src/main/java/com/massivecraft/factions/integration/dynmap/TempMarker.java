@@ -42,7 +42,7 @@ public class TempMarker {
 
     public Marker create(MarkerAPI markerApi, MarkerSet markerset, String markerId) {
         Marker ret = markerset.createMarker(markerId, this.label, this.world, this.x, this.y, this.z, getMarkerIcon(markerApi, this.iconName), false // not persistent
-        );
+                );
 
         if (ret == null) {
             return null;

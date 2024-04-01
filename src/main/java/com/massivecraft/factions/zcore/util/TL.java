@@ -64,6 +64,9 @@ public enum TL {
     ACTION_DENIED_WILDERNESS("You can't use %1$s in wilderness!"),
     ACTION_DENIED_OTHER("%1$s does not allow you to %2$s here!"),
 
+    //ANTI_LOOT
+    ANTI_LOOT_PICKUP_FAILED("&c&l(LOOT) &cYou cannot loot this item for {seconds}s!"),
+
     /**
      * Command translations
      */

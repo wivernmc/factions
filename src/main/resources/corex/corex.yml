@@ -10,8 +10,8 @@
 #<-------------------------------------->NOTES<-------------------------------------->#
 
 Features:
-
   Anti-Boat-Placement: false #Denies Players From Placing Boats
+  Anti-Loot-Steal: true #Upon killing a player in PVP the loot is protected
   Anti-Minecart-Placement: false #Denies Players From Placing Minecarts
   Anti-Vehicle-Teleport: true #Denies Block Phasing Through Exiting Vehicles!
   EnderPearl-Cooldown: false #Places a Cooldown on Ender Pearls!
@@ -74,6 +74,11 @@ Anti-Mob-Targeting:
   Mob-List:
     - 'CREEPER'
     - 'BLAZE'
+
+Anti-Loot-Steal:
+  Protected-Time: 45 #This Time Is In Seconds
+  Disabled-Worlds:
+    - "some_world_name"
 
 
 

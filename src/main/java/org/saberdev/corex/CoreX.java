@@ -5,6 +5,7 @@ import com.massivecraft.factions.util.Logger;
 import com.massivecraft.factions.zcore.file.CustomFile;
 import org.bukkit.event.Listener;
 import org.saberdev.corex.listeners.*;
+import org.saberdev.corex.listeners.anti_loot.AntiLootSteal;
 import org.saberdev.corex.listeners.mob.*;
 
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ public class CoreX {
         registerFeature(initializedFeatures, "Anti-Chicken", new AntiChicken());
         registerFeature(initializedFeatures, "Anti-Natural-Spawn-Faction", new AntiMobFactionTerritory());
         registerFeature(initializedFeatures, "Anti-Redstone-Trapdoor-Crash", new AntiRedstoneOnTrapdoorCrash());
+        registerFeature(initializedFeatures, "Anti-Loot-Steal", new AntiLootSteal());
 
         if (!initializedFeatures.isEmpty()) {
             Logger.print("Enabling " + initializedFeatures.size() + " CoreX Features...", Logger.PrefixType.DEFAULT);

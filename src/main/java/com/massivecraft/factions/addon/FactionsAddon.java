@@ -18,6 +18,11 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This class represents an addon for the Factions plugin.
+ *
+ * @author Your Name
+ */
 public abstract class FactionsAddon {
 
     private final String addonName;
@@ -26,11 +31,21 @@ public abstract class FactionsAddon {
     private File configFile;
     private FileConfiguration config;
 
+    private boolean configLoaded = false;
+
+    /**
+     * Creates a new FactionsAddon instance.
+     *
+     * @param plugin The FactionsPlugin instance.
+     */
     public FactionsAddon(final FactionsPlugin plugin) {
         this.plugin = plugin;
         this.addonName = getFriendlyName();
     }
 
+    /**
+     * Initializes the addon.
+     */
     public void initializeAddon() {
         loadConfig();
         onEnable();
@@ -39,70 +54,129 @@ public abstract class FactionsAddon {
         Logger.print("Addon: " + getAddonName() + " loaded successfully!", Logger.PrefixType.DEFAULT);
     }
 
+    /**
+     * Terminates the addon.
+     */
     public void terminateAddon() {
         unregisterListeners();
         onDisable();
+        // Save config only if it was loaded before
+        if (configLoaded) {
+            saveConfig();
+        }
     }
 
+    /**
+     * This method is called when the addon is enabled.
+     */
     protected abstract void onEnable();
 
+    /**
+     * This method is called when the addon is disabled.
+     */
     protected abstract void onDisable();
 
+    /**
+     * Returns the friendly name of the addon.
+     *
+     * @return The friendly name of the addon.
+     */
     protected abstract String getFriendlyName();
 
+    /**
+     * Returns a set of listeners that should be registered for this addon.
+     *
+     * @return A set of listeners.
+     */
     protected Set<Listener> listenersToRegister() {
         return new HashSet<>();
     }
 
+    /**
+     * Returns a set of FCommands that should be registered for this addon.
+     *
+     * @return A set of FCommands.
+     */
     protected Set<FCommand> fCommandsToRegister() {
         return new HashSet<>();
     }
 
+    /**
+     * Returns the name of the addon.
+     *
+     * @return The name of the addon.
+     */
     public String getAddonName() {
         return addonName;
     }
 
+    /**
+     * Returns the FactionsPlugin instance.
+     *
+     * @return The FactionsPlugin instance.
+     */
     public FactionsPlugin getPlugin() {
         return plugin;
     }
 
+    /**
+     * Registers the listeners for this addon.
+     */
     private void registerListeners() {
         for (Listener listener : listenersToRegister()) {
-            if (listener != null) {
+            if (listener!= null) {
                 plugin.getServer().getPluginManager().registerEvents(listener, plugin);
             }
         }
     }
 
+    /**
+     * Unregisters the listeners for this addon.
+     */
     private void unregisterListeners() {
         for (Listener listener : listenersToRegister()) {
             HandlerList.unregisterAll(listener);
         }
     }
 
+    /**
+     * Registers the FCommands for this addon.
+     */
     private void registerFCommands() {
         for (FCommand fCommand : fCommandsToRegister()) {
-            if (fCommand != null) {
+            if (fCommand!= null) {
                 plugin.cmdBase.addSubCommand(fCommand);
             }
         }
     }
 
+    /**
+     * Loads the configuration for this addon.
+     */
     public void loadConfig() {
-        Path path = Paths.get(plugin.getDataFolder().toString(), "configuration/addons", getAddonName().toLowerCase() + ".yml");
-        configFile = path.toFile();
+        if (!configLoaded) {
+            Path path = Paths.get(plugin.getDataFolder().toString(), "configuration/addons", getAddonName().toLowerCase() + ".yml");
+            configFile = path.toFile();
 
-        if (!Files.exists(path)) {
-            try {
-                exportConfig("/" + getAddonName().toLowerCase() + ".yml");
-            } catch (Exception e) {
-                Logger.print("Error transferring config for " + getAddonName() + ": " + e.getMessage(), Logger.PrefixType.FAILED);
-                e.printStackTrace();
+            if (!Files.exists(path)) {
+                try {
+                    exportConfig("/" + getAddonName().toLowerCase() + ".yml");
+                } catch (Exception e) {
+                    Logger.print("Error transferring config for " + getAddonName() + ": " + e.getMessage(), Logger.PrefixType.FAILED);
+                    e.printStackTrace();
+                }
             }
+            config = YamlConfiguration.loadConfiguration(configFile);
+            configLoaded = true;
         }
-        config = YamlConfiguration.loadConfiguration(configFile);
     }
 
+    /**
+     * Exports the default configuration for this addon.
+     *
+     * @param resourceName The name of the resource to export.
+     * @throws Exception If an error occurs while exporting the configuration.
+     */
     private void exportConfig(String resourceName) throws Exception {
         try (InputStream stream = this.getClass().getResourceAsStream(resourceName);
              OutputStream resStreamOut = Files.newOutputStream(Paths.get(plugin.getDataFolder().toString(), "configuration/addons", resourceName.toLowerCase()))) {
@@ -120,6 +194,9 @@ public abstract class FactionsAddon {
         }
     }
 
+    /**
+     * Saves the configuration for this addon.
+     */
     public void saveConfig() {
         if (config == null || configFile == null) return;
         try {
@@ -130,8 +207,13 @@ public abstract class FactionsAddon {
         }
     }
 
+    /**
+     * Returns the configuration for this addon.
+     *
+     * @return The configuration for this addon.
+     */
     public FileConfiguration getConfig() {
-        if (config == null) {
+        if (!configLoaded) {
             loadConfig();
         }
         return config;

@@ -25,11 +25,7 @@ public class FactionDataListener implements Listener {
         if (e.getReason() == FPlayerJoinEvent.PlayerJoinReason.CREATE) {
             Bukkit.getScheduler().runTaskAsynchronously(FactionsPlugin.getInstance(), () -> {
                 if (!FactionDataHelper.doesConfigurationExist(faction)) {
-                    try {
-                        FactionDataHelper.createConfiguration(faction);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    FactionDataHelper.createConfiguration(faction);
                     Bukkit.getLogger().info("[FactionData] Creating Faction Data for " + faction.getTag());
                 }
                 FactionDataHelper.addFactionData(new FactionData(faction));
@@ -40,11 +36,13 @@ public class FactionDataListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onFactionDisband(FactionDisbandEvent e) {
         FactionData data = FactionDataHelper.findFactionData(e.getFaction());
-
-        if (data == null) {
-            return;
-        }
-
-        Bukkit.getScheduler().runTaskAsynchronously(FactionsPlugin.getInstance(), () -> data.deleteFactionData(e.getFaction()));
+        if (data == null) return;
+        Bukkit.getScheduler().runTaskAsynchronously(FactionsPlugin.getInstance(), () -> {
+            try {
+                data.deleteFactionData(e.getFaction());
+            } catch (Exception ex) {
+                Bukkit.getLogger().severe("Error deleting faction data: " + ex.getMessage());
+            }
+        });
     }
 }
