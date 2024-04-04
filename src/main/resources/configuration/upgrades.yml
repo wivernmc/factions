@@ -77,6 +77,7 @@ fupgrades:
           - '&7&o(( Tip: &f&oleft-click&7&o to &c&oupgrade&7&o ))'
         Slot: 31
     Fall-Damage:
+      Max-Level: 1
       Cost:
         level-1: 2000000
       DisplayItem:
