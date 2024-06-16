@@ -36,12 +36,6 @@ public class ClipPlaceholderAPIManager extends PlaceholderExpansion implements R
         return "drtshock";
     }
 
-    // Since we are registering this expansion from the dependency, this can be null
-    @Override
-    public String getPlugin() {
-        return null;
-    }
-
     // Return the plugin version since this expansion is bundled with the dependency
     @Override
     public String getVersion() {
@@ -230,7 +224,7 @@ public class ClipPlaceholderAPIManager extends PlaceholderExpansion implements R
         //If it's not hardcoded lets try to grab it anyway
         boolean targetFaction = false;
         Object target = fPlayer;
-        String stripped = "";
+        String stripped;
         if (placeholder.startsWith("faction_")) {
             targetFaction = true;
             target = faction;
