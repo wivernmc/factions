@@ -425,7 +425,7 @@ public class Conf {
     public static HashMap<String, DefaultPermissions> defaultFactionPermissions = new HashMap<>();
     public static HashSet<PermissableAction> lockedPermissions = new HashSet<>();
 
-    private static final Conf i = new Conf();
+    private static transient Conf i = new Conf();
 
     static {
         lockedPermissions.add(PermissableAction.CHEST);
