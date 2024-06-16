@@ -8,8 +8,6 @@ import com.massivecraft.factions.util.Placeholder;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -85,15 +83,6 @@ public class UpgradeManager {
         return item;
     }
 
-    private ItemStack enchant(ItemStack item) {
-        ItemMeta itemMeta = item.getItemMeta();
-        if (itemMeta != null) {
-            itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
-            item.setItemMeta(itemMeta);
-        }
-        return item;
-    }
 
     public static UpgradeManager getInstance() {
         return instance == null ? instance = new UpgradeManager().loadUpgrades() : instance;

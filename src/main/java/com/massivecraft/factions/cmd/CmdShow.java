@@ -52,11 +52,8 @@ public class CmdShow extends FCommand {
     @Override
     public void perform(CommandContext context) {
         Faction faction = context.faction;
-        if (context.argIsSet(0))
-            faction = context.argAsFaction(0);
-
-        if (faction == null)
-            return;
+        if (context.argIsSet(0)) faction = context.argAsFaction(0);
+        if (faction == null) return;
 
         if (context.fPlayer != null && !context.player.getPlayer().hasPermission("factions.show.bypassexempt")
                 && FactionsPlugin.getInstance().getConfig().getStringList("show-exempt").contains(faction.getTag())) {
@@ -103,7 +100,6 @@ public class CmdShow extends FCommand {
                     List<Component> localFancy = TagUtil.parseFancy(finalFaction, context.fPlayer, parsed);
                     if (localFancy != null)
                         fancy.addAll(localFancy);
-
                     continue;
                 }
                 if (!parsed.contains("{notFrozen}") && !parsed.contains("{notPermanent}")) {
@@ -114,6 +110,7 @@ public class CmdShow extends FCommand {
                     if (parsed.contains("%")) {
                         parsed = parsed.replaceAll("%", ""); // Just in case it got in there before we disallowed it.
                     }
+
                     parsed = TextUtil.parse(parsed);
                     Component localFancy = TextUtil.parseFancy(parsed).build();
                     fancy.add(localFancy);

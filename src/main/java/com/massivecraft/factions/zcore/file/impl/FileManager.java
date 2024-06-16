@@ -34,7 +34,6 @@ public class FileManager {
     }
 
     public void setupFiles() {
-        customFiles.get("boosters").setup(true, "data");
         customFiles.get("timers").setup(true, "data");
         customFiles.get("permissions").setup(true, "data");
         customFiles.get("corex").setup(true, "corex");
@@ -52,9 +51,6 @@ public class FileManager {
         return customFiles.getOrDefault(key, null);
     }
 
-    public CustomFile getBoosters() {
-        return getFileByKey("boosters");
-    }
 
     public CustomFile getTimers() {
         return getFileByKey("timers");

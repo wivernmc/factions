@@ -1133,6 +1133,7 @@ public enum TL {
     /**
      * Leaving - This is accessed through a command, and so it MAY need a COMMAND_* slug :s
      */
+    LEAVE_LAST_PLAYER("&c&l[!] &7You are the last player in your faction. You must disband it."),
     LEAVE_PASSADMIN("&c&l[!] &7You must give the admin role to someone else first."),
     LEAVE_NEGATIVEPOWER("&c&l[!] &7You cannot leave until your power is positive."),
     LEAVE_TOLEAVE("to leave your faction."),

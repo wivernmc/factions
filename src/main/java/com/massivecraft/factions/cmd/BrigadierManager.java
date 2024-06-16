@@ -40,7 +40,7 @@ public class BrigadierManager {
         for (String alias : subCommand.aliases) {
             LiteralArgumentBuilder<Object> literal = LiteralArgumentBuilder.literal(alias);
 
-            if (subCommand.requirements.brigadier != null) {
+            if (subCommand.requirements.getBrigadier() != null) {
                 registerUsingProvider(subCommand, literal);
             } else {
                 registerGeneratedBrigadier(subCommand, literal);
@@ -49,7 +49,7 @@ public class BrigadierManager {
     }
 
     private void registerUsingProvider(FCommand subCommand, LiteralArgumentBuilder<Object> literal) {
-        Class<? extends BrigadierProvider> brigadierProvider = subCommand.requirements.brigadier;
+        Class<? extends BrigadierProvider> brigadierProvider = subCommand.requirements.getBrigadier();
         try {
             Constructor<? extends BrigadierProvider> constructor = brigadierProvider.getDeclaredConstructor();
             brigadier.then(constructor.newInstance().get(literal));

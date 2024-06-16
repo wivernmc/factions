@@ -208,17 +208,6 @@ public abstract class MPlugin extends JavaPlugin {
 
     public abstract Gson getGson();
 
-    public void addRawTags() {
-        this.rawTags.put("l", "<green>"); // logo
-        this.rawTags.put("a", "<gold>"); // art
-        this.rawTags.put("n", "<silver>"); // notice
-        this.rawTags.put("i", "<yellow>"); // info
-        this.rawTags.put("g", "<lime>"); // good
-        this.rawTags.put("b", "<rose>"); // bad
-        this.rawTags.put("h", "<pink>"); // highligh
-        this.rawTags.put("c", "<aqua>"); // command
-        this.rawTags.put("plugin", "<teal>"); // parameter
-    }
 
     // -------------------------------------------- //
     // COMMAND HANDLING

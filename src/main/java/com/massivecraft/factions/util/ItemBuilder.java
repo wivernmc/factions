@@ -1,8 +1,8 @@
 package com.massivecraft.factions.util;
 
 
+import com.cryptomorin.xseries.XEnchantment;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -74,10 +74,10 @@ public class ItemBuilder {
     public ItemBuilder glowing(boolean status) {
         if (status) {
             this.meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-            this.meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            this.meta.addEnchant(XEnchantment.UNBREAKING.getEnchant(), 1, true);
         } else {
             this.meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
-            this.meta.removeEnchant(Enchantment.DURABILITY);
+            this.meta.removeEnchant(XEnchantment.UNBREAKING.getEnchant());
         }
         return this;
     }

@@ -6,8 +6,8 @@ import java.util.List;
 
 public class Placeholder {
 
-    private String tag;
-    private String replace;
+    private final String tag;
+    private final String replace;
 
     public Placeholder(String tag, String replace) {
         this.tag = tag;

@@ -33,10 +33,6 @@ public class FDisbandFrame extends SaberGUI {
         this.config = FactionsPlugin.getInstance().getConfig();
     }
 
-    private FileConfiguration getConfig() {
-        return FactionsPlugin.getInstance().getConfig();
-    }
-
     private ItemStack buildConfirmDummyItem(Faction faction) {
         ConfigurationSection confirmConfig = config.getConfigurationSection("f-disband-gui.confirm-item");
         ItemStack item = XMaterial.matchXMaterial(confirmConfig.getString("Type")).get().parseItem();

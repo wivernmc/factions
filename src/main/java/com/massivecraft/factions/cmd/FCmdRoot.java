@@ -4,8 +4,6 @@ import com.massivecraft.factions.Conf;
 import com.massivecraft.factions.FactionsPlugin;
 import com.massivecraft.factions.cmd.alts.CmdAlts;
 import com.massivecraft.factions.cmd.audit.CmdAudit;
-import com.massivecraft.factions.cmd.banner.CmdBanner;
-import com.massivecraft.factions.cmd.banner.CmdTpBanner;
 import com.massivecraft.factions.cmd.check.CmdCheck;
 import com.massivecraft.factions.cmd.chest.CmdChest;
 import com.massivecraft.factions.cmd.claim.*;
@@ -135,9 +133,6 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public CmdLowPower cmdLowPower = new CmdLowPower();
     public CmdTntFill cmdTntFill = new CmdTntFill();
     public CmdChest cmdChest = new CmdChest();
-    public CmdSetBanner cmdSetBanner = new CmdSetBanner();
-    public CmdBanner cmdBanner = new CmdBanner();
-    public CmdTpBanner cmdTpBanner = new CmdTpBanner();
     public CmdAlts cmdAlts = new CmdAlts();
     public CmdCorner cmdCorner = new CmdCorner();
     public CmdInventorySee cmdInventorySee = new CmdInventorySee();
@@ -166,7 +161,7 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
     public CmdSetTnt cmdSetTnt = new CmdSetTnt();
     public CmdCornerList cmdCornerList = new CmdCornerList();
     public CmdAutoUnclaim cmdAutoUnclaim = new CmdAutoUnclaim();
-    public CmdRally cmdRally = new CmdRally();
+    //public CmdRally cmdRally = new CmdRally();
     public CmdSetRelation cmdSetRelation = new CmdSetRelation();
     public CmdInvite cmdInvite = new CmdInvite();
     public CmdJoin cmdJoin = new CmdJoin();
@@ -310,7 +305,7 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
         this.addSubCommand(this.cmdSetTnt);
         this.addSubCommand(this.cmdUnclaimfill);
         this.addSubCommand(this.cmdAutoUnclaim);
-        this.addSubCommand(this.cmdRally);
+        //this.addSubCommand(this.cmdRally);
         this.addSubCommand(this.cmdSetRelation);
         this.addSubCommand(this.cmdSetDiscord);
         this.addSubCommand(this.cmdSeeDiscord);
@@ -331,13 +326,7 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
             }
         }, 200);
 
-        if (FactionsPlugin.getInstance().getConfig().getBoolean("fbanners.Enabled")) {
-            this.addSubCommand(this.cmdSetBanner);
-            this.addSubCommand(this.cmdTpBanner);
-            this.addSubCommand(this.cmdBanner);
-        }
-
-            //Reserve
+        //Reserve
         if (Conf.useReserveSystem) {
             this.addSubCommand(this.cmdReserve);
         }
@@ -351,7 +340,7 @@ public class FCmdRoot extends FCommand implements CommandExecutor {
         //Check
         if (Conf.useCheckSystem && !checkEnabled) {
             this.addSubCommand(this.cmdCheck);
-           // this.addSubCommand(this.cmdWeeWoo);
+            // this.addSubCommand(this.cmdWeeWoo);
             checkEnabled = true;
         }
 

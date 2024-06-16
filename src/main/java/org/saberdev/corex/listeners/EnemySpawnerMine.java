@@ -39,7 +39,7 @@ public class EnemySpawnerMine implements Listener {
                 if (eplayer.hasMetadata("NPC")) continue;
                 FPlayer efplayer = FPlayers.getInstance().getByPlayer(eplayer);
                 if (efplayer == null) continue;
-                if (efplayer.isVanished() || !player.canSee(eplayer)) continue;
+                if (!player.canSee(eplayer)) continue;
                 if (fPlayer.getRelationTo(efplayer).equals(Relation.ENEMY)) {
                     return true;
                 }

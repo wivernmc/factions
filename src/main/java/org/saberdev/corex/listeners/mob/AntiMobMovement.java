@@ -1,5 +1,7 @@
 package org.saberdev.corex.listeners.mob;
 
+import com.cryptomorin.xseries.XEntityType;
+import com.cryptomorin.xseries.XPotion;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -23,14 +25,17 @@ public class AntiMobMovement implements Listener {
     public void entitySpawnEvent(EntitySpawnEvent event) {
         if (entList.isEmpty()) return;
         EntityType type = event.getEntityType();
-        if (type == EntityType.PLAYER || type == EntityType.DROPPED_ITEM || type == EntityType.PRIMED_TNT) {
+        if (type == EntityType.PLAYER || type == XEntityType.ITEM.get() || type == XEntityType.TNT.get()) {
             return;
         }
         if (!entList.contains(type.name())) {
             return;
         }
         LivingEntity entity = (LivingEntity) event.getEntity();
-        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 999999999, 25));
+        PotionEffect potionEffect = XPotion.SLOWNESS.buildPotionEffect(Integer.MAX_VALUE, 25);
+        if (potionEffect != null) {
+            entity.addPotionEffect(potionEffect);
+        }
     }
 
     @EventHandler

@@ -5,6 +5,7 @@ import com.massivecraft.factions.event.PowerLossEvent;
 import com.massivecraft.factions.struct.Relation;
 import com.massivecraft.factions.util.Logger;
 import com.massivecraft.factions.util.MiscUtil;
+import com.massivecraft.factions.util.XPotionEffect;
 import com.massivecraft.factions.zcore.util.TL;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -34,8 +35,7 @@ public class FactionsEntityListener implements Listener {
     /**
      * @author FactionsUUID Team - Modified By CmdrKittens
      */
-
-    private static final Set<PotionEffectType> badPotionEffects = new LinkedHashSet<>(Arrays.asList(PotionEffectType.BLINDNESS, PotionEffectType.CONFUSION, PotionEffectType.HARM, PotionEffectType.HUNGER, PotionEffectType.POISON, PotionEffectType.SLOW, PotionEffectType.SLOW_DIGGING, PotionEffectType.WEAKNESS, PotionEffectType.WITHER));
+    private static final Set<PotionEffectType> badPotionEffects = new LinkedHashSet<>(Arrays.asList(XPotionEffect.BLINDNESS.toPotionEffectType().get(), XPotionEffect.NAUSEA.toPotionEffectType().get(), XPotionEffect.INSTANT_DAMAGE.toPotionEffectType().get(), PotionEffectType.HUNGER, PotionEffectType.POISON, XPotionEffect.SLOWNESS.toPotionEffectType().get(), XPotionEffect.MINING_FATIGUE.toPotionEffectType().get(), PotionEffectType.WEAKNESS, PotionEffectType.WITHER));
     /**
      * Who can I hurt? I can never hurt members or allies. I can always hurt enemies. I can hurt neutrals as long as
      * they are outside their own territory.

@@ -4,7 +4,7 @@
 
     <groupId>com.massivecraft</groupId>
     <artifactId>Factions</artifactId>
-    <version>1.6.9.5-4.1.4-STABLE</version>
+    <version>1.6.9.5-4.1.6-BETA</version>
     <packaging>jar</packaging>
 
     <name>SaberFactions</name>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.20.4-R0.1-SNAPSHOT</version>
+            <version>1.20.6-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>de.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
-            <version>2.12.2</version>
+            <version>2.12.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -125,7 +125,7 @@
         <dependency>
             <groupId>com.github.cryptomorin</groupId>
             <artifactId>XSeries</artifactId>
-            <version>9.8.1</version>
+            <version>11.0.0-beta</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -139,20 +139,6 @@
                     <groupId>org.bukkit</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>mcMMO</groupId>
-            <artifactId>mcMMO</artifactId>
-            <scope>system</scope>
-            <version>2.0</version>
-            <systemPath>${project.basedir}/dependencies/mcMMO.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>Lunar-Client-API</groupId>
-            <artifactId>LC-API</artifactId>
-            <scope>system</scope>
-            <version>1.16</version>
-            <systemPath>${project.basedir}/dependencies/bukkitapi.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>be.maximvdw</groupId>
@@ -223,7 +209,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>dev.rosewood</groupId>
             <artifactId>rosestacker</artifactId>
@@ -266,19 +251,19 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-api</artifactId>
-            <version>4.16.0</version>
+            <version>4.18.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-serializer-legacy</artifactId>
-            <version>4.16.0</version>
+            <version>4.18.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-serializer-gson</artifactId>
-            <version>4.16.0</version>
+            <version>4.18.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

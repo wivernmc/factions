@@ -1,5 +1,7 @@
 package org.saberdev.corex.listeners;
 
+import com.cryptomorin.xseries.XEntity;
+import com.cryptomorin.xseries.XEntityType;
 import org.bukkit.Location;
 import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
@@ -161,7 +163,7 @@ public class BorderPatches implements Listener {
             ignoreCancelled = true
     )
     public void onTntExplode(ExplosionPrimeEvent e) {
-        if (e.getEntity().getType() == EntityType.PRIMED_TNT && this.isOutsideWorldBorder(e.getEntity(), true)) {
+        if (e.getEntity().getType() == XEntityType.TNT.get() && this.isOutsideWorldBorder(e.getEntity(), true)) {
             e.setCancelled(true);
             e.getEntity().remove();
         }

@@ -12,7 +12,6 @@ public class Aliases {
      */
 
     public static ArrayList<String> allyfwarp = new ArrayList<>(Arrays.asList("allywarp", "allyfwarp", "warpally", "awarp"));
-
     public static ArrayList<String> missions_missions = new ArrayList<>(Arrays.asList("missions", "mission", "objectives", "objective"));
     public static ArrayList<String> friendlyFire = new ArrayList<>(Arrays.asList("friendlyfire", "ff"));
     public static ArrayList<String> notifications = new ArrayList<>(Arrays.asList("notifications", "notis"));

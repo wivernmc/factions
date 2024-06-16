@@ -9,30 +9,14 @@ import com.massivecraft.factions.zcore.util.TL;
 
 public class  CommandRequirements {
 
-    /**
-     * @author FactionsUUID Team - Modified By CmdrKittens
-     */
-
-    // Permission required to execute command
-    public Permission permission;
-
-    // Must be player
-    public boolean playerOnly;
-    // Must be member of faction
-    public boolean memberOnly;
-
-    // Must be atleast this role
-    public Role role;
-
-    // PermissableAction check if the player has allow for this before checking the role
-    public PermissableAction action;
-
-    // Commodore stuffs
-    public Class<? extends BrigadierProvider> brigadier;
-
-    // Edge case handling
-    public boolean errorOnManyArgs;
-    public boolean disableOnLock;
+    private Permission permission;
+    private boolean playerOnly;
+    private boolean memberOnly;
+    private Role role;
+    private PermissableAction action;
+    private Class<? extends BrigadierProvider> brigadier;
+    private boolean errorOnManyArgs;
+    private boolean disableOnLock;
 
     private CommandRequirements(Permission permission, boolean playerOnly, boolean memberOnly, Role role, PermissableAction action, Class<? extends BrigadierProvider> brigadier) {
         this.permission = permission;
@@ -44,69 +28,89 @@ public class  CommandRequirements {
     }
 
     public boolean computeRequirements(CommandContext context, boolean informIfNot) {
-        // Did not modify CommandRequirements return true
         if (permission == null) {
             return true;
         }
 
         if (context.player != null) {
-            // Is Player
             if (!context.fPlayer.hasFaction() && memberOnly) {
                 if (informIfNot) context.msg(TL.GENERIC_MEMBERONLY);
                 return false;
             }
 
-            if (context.fPlayer.isAdminBypassing()) return true;
+            if (context.fPlayer.isAdminBypassing()) {
+                return true;
+            }
 
+            if (!FactionsPlugin.getInstance().perm.has(context.sender, permission.node, informIfNot)) {
+                return false;
+            }
 
-            if (!FactionsPlugin.getInstance().perm.has(context.sender, permission.node, informIfNot)) return false;
-
-            // Permissable Action provided compute that before role
             if (action != null) {
-                if (context.fPlayer.getRole() == Role.LEADER) return true;
+                if (context.fPlayer.getRole() == Role.LEADER) {
+                    return true;
+                }
                 Access access = context.faction.getAccess(context.fPlayer, action);
                 if (access == Access.DENY) {
                     if (informIfNot) context.msg(TL.GENERIC_FPERM_NOPERMISSION, action.getName());
                     return false;
                 }
-
-                if (access != Access.ALLOW) {
-                    // They have undefined assert their role
-                    if (role != null && !context.fPlayer.getRole().isAtLeast(role)) {
-                        // They do not fullfill the role
-                        if (informIfNot) context.msg(TL.GENERIC_YOUMUSTBE, role.translation);
-                        return false;
-                    }
+                if (access != Access.ALLOW && role != null && !context.fPlayer.getRole().isAtLeast(role)) {
+                    if (informIfNot) context.msg(TL.GENERIC_YOUMUSTBE, role.translation);
+                    return false;
                 }
-                // They have been explicitly allowed
                 return true;
             } else {
-                if ((role != null && !context.fPlayer.getRole().isAtLeast(role)) && informIfNot) {
-                    context.msg(TL.GENERIC_YOUMUSTBE, role.translation);
-                }
                 return role == null || context.fPlayer.getRole().isAtLeast(role);
             }
         } else {
-            if (playerOnly) {
-                if (informIfNot) context.sender.sendMessage(TL.GENERIC_PLAYERONLY.toString());
-                return false;
+            if (playerOnly && informIfNot) {
+                context.sender.sendMessage(TL.GENERIC_PLAYERONLY.toString());
             }
-            return context.sender.hasPermission(permission.node);
+            return !playerOnly || context.sender.hasPermission(permission.node);
         }
+    }
+
+    public Permission getPermission() {
+        return permission;
+    }
+
+    public boolean isPlayerOnly() {
+        return playerOnly;
+    }
+
+    public boolean isMemberOnly() {
+        return memberOnly;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public PermissableAction getAction() {
+        return action;
+    }
+
+    public Class<? extends BrigadierProvider> getBrigadier() {
+        return brigadier;
+    }
+
+    public boolean isErrorOnManyArgs() {
+        return errorOnManyArgs;
+    }
+
+    public boolean isDisableOnLock() {
+        return disableOnLock;
     }
 
     public static class Builder {
 
         private Permission permission;
-
         private boolean playerOnly = false;
         private boolean memberOnly = false;
-
         private Role role = null;
         private PermissableAction action;
-
         private Class<? extends BrigadierProvider> brigadier;
-
         private boolean errorOnManyArgs = true;
         private boolean disableOnLock = true;
 
@@ -140,13 +144,6 @@ public class  CommandRequirements {
             return this;
         }
 
-        public CommandRequirements build() {
-            CommandRequirements requirements = new CommandRequirements(permission, playerOnly, memberOnly, role, action, brigadier);
-            requirements.errorOnManyArgs = errorOnManyArgs;
-            requirements.disableOnLock = disableOnLock;
-            return requirements;
-        }
-
         public Builder noErrorOnManyArgs() {
             errorOnManyArgs = false;
             return this;
@@ -157,6 +154,11 @@ public class  CommandRequirements {
             return this;
         }
 
+        public CommandRequirements build() {
+            CommandRequirements requirements = new CommandRequirements(permission, playerOnly, memberOnly, role, action, brigadier);
+            requirements.errorOnManyArgs = errorOnManyArgs;
+            requirements.disableOnLock = disableOnLock;
+            return requirements;
+        }
     }
-
 }

@@ -13,12 +13,10 @@ import com.massivecraft.factions.cmd.FCommand;
 import com.massivecraft.factions.cmd.audit.FChestListener;
 import com.massivecraft.factions.cmd.audit.FLogManager;
 import com.massivecraft.factions.cmd.audit.FLogType;
-import com.massivecraft.factions.cmd.banner.struct.BannerManager;
 import com.massivecraft.factions.cmd.chest.AntiChestListener;
 import com.massivecraft.factions.cmd.reserve.ReserveAdapter;
 import com.massivecraft.factions.cmd.reserve.ReserveObject;
 import com.massivecraft.factions.data.helpers.FactionDataHelper;
-import com.massivecraft.factions.integration.LunarClientWrapper;
 import com.massivecraft.factions.listeners.*;
 import com.massivecraft.factions.listeners.vspecific.ChorusFruitListener;
 import com.massivecraft.factions.missions.MissionHandler;
@@ -62,10 +60,7 @@ import java.util.*;
 
 public class FactionsPlugin extends MPlugin {
 
-    // Our single plugin instance.
-    // Single 4 life.
     public static FactionsPlugin instance;
-
     private final Gson gsonSerializer = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().enableComplexMapKeySerialization().excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.VOLATILE)
             .registerTypeAdapter(new TypeToken<Map<Permissable, Map<PermissableAction, Access>>>() {
             }.getType(), new PermissionsMapTypeAdapter())
@@ -77,7 +72,10 @@ public class FactionsPlugin extends MPlugin {
             .registerTypeAdapter(Location.class, new LocationTypeAdapter())
             .registerTypeAdapterFactory(EnumTypeAdapter.ENUM_FACTORY)
             .create();
+
+    //TODO REDO
     public static boolean cachedRadiusClaim;
+
     public static Permission perms = null;
     private Map<String, FactionsAddon> factionsAddonHashMap;
     private final HashMap<Faction, String> shieldStatMap = new HashMap<>();
@@ -87,13 +85,11 @@ public class FactionsPlugin extends MPlugin {
     // a green light to use the api.
     public static boolean startupFinished = false;
     public boolean PlaceholderApi;
-    // Commands
 
+    // Commands
     public FCmdRoot cmdBase;
     public CmdAutoHelp cmdAutoHelp;
-    private AsyncPlayerMap asyncPlayerMap;
     public short version;
-    public boolean useNonPacketParticles = false;
     public List<String> itemList = getConfig().getStringList("fchest.Items-Not-Allowed");
     public boolean hookedPlayervaults;
     public FLogManager fLogManager;
@@ -105,8 +101,6 @@ public class FactionsPlugin extends MPlugin {
     private Integer AutoLeaveTask = null;
     private ClipPlaceholderAPIManager clipPlaceholderAPIManager;
     private boolean mvdwPlaceholderAPIManager = false;
-    private BannerManager bannerManager;
-    public LunarClientWrapper lcWrapper;
 
     public FactionsPlugin() {
         instance = this;
@@ -211,7 +205,7 @@ public class FactionsPlugin extends MPlugin {
                 Bukkit.getPluginManager().registerEvents(timerManager.graceTimer, this);
             }
 
-            this.asyncPlayerMap = new AsyncPlayerMap(this);
+            new AsyncPlayerMap(this);
 
             this.setupPlaceholderAPI();
             factionsAddonHashMap = new HashMap<>();
@@ -225,14 +219,7 @@ public class FactionsPlugin extends MPlugin {
                 }
             }, 100);
 
-            if (FactionsPlugin.getInstance().getConfig().getBoolean("fbanners.Enabled")) {
-                bannerManager = new BannerManager();
-                bannerManager.onEnable(this);
-                //getServer().getPluginManager().registerEvents(new BannerListener(), this);
-            }
-
             this.getCommand(refCommand).setExecutor(cmdBase);
-
             if (!CommodoreProvider.isSupported()) this.getCommand(refCommand).setTabCompleter(this);
 
 
@@ -289,10 +276,6 @@ public class FactionsPlugin extends MPlugin {
         }
     }
 
-    public BannerManager getBannerManager() {
-        return bannerManager;
-    }
-
     @Override
     public Gson getGson() {
         return this.gsonSerializer;
@@ -301,9 +284,6 @@ public class FactionsPlugin extends MPlugin {
     @Override
     public void onDisable() {
 
-        if (bannerManager != null) {
-            bannerManager.onDisable(this);
-        }
 
         ShutdownParameter.initShutdown(this);
 
@@ -334,7 +314,6 @@ public class FactionsPlugin extends MPlugin {
 
     @Override
     public void postAutoSave() {
-        //Board.getInstance().forceSave(); Not sure why this was there as it's called after the board is already saved.
         Conf.save();
     }
 
@@ -368,7 +347,7 @@ public class FactionsPlugin extends MPlugin {
         // Check for "" first arg because spigot is mangled.
         if (context.args.get(0).equals("")) {
             for (FCommand subCommand : commandsEx.subCommands) {
-                if (subCommand.requirements.playerOnly && sender.hasPermission(subCommand.requirements.permission.node) && subCommand.visibility != CommandVisibility.INVISIBLE)
+                if (subCommand.requirements.isPlayerOnly() && sender.hasPermission(subCommand.requirements.getPermission().node) && subCommand.visibility != CommandVisibility.INVISIBLE)
                     completions.addAll(subCommand.aliases);
             }
             return completions;
@@ -415,10 +394,6 @@ public class FactionsPlugin extends MPlugin {
         }
     }
 
-    public AsyncPlayerMap getAsyncPlayerMap() {
-        return asyncPlayerMap;
-    }
-
     // -------------------------------------------- //
     // Functions for other plugins to hook into
     // -------------------------------------------- //
@@ -436,9 +411,6 @@ public class FactionsPlugin extends MPlugin {
         this.fLogManager.log(faction, type, arguments);
     }
 
-    public LunarClientWrapper getLunarClientWrapper() {
-        return lcWrapper;
-    }
 
     public List<ReserveObject> getFactionReserves() {
         return this.reserveObjects;
