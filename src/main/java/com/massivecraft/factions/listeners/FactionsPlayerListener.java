@@ -86,12 +86,6 @@ public class FactionsPlayerListener implements Listener {
         }
     }
 
-    public static Boolean isSystemFaction(Faction faction) {
-        return faction.isSafeZone() ||
-                faction.isWarZone() ||
-                faction.isWilderness();
-    }
-
     public static boolean playerCanUseItemHere(Player player, Location location, Material material, boolean justCheck, PermissableAction permissableAction) {
         material = XMaterial.matchXMaterial(material).parseMaterial();
 
@@ -100,6 +94,7 @@ public class FactionsPlayerListener implements Listener {
         }
 
         FPlayer me = FPlayers.getInstance().getByPlayer(player);
+
         if (me.isAdminBypassing()) {
             return true;
         }

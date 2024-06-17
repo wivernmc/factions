@@ -152,10 +152,8 @@ public class FactionsEntityListener implements Listener {
 
                         // Run the check for a player
                         if (damager instanceof Player) {
-
                             if (!FactionsBlockListener.playerCanBuildDestroyBlock((Player) damager, damageee.getLocation(), "destroy", false))
                                 event.setCancelled(true);
-
                         } else {
                             // we don't want to let mobs/arrows destroy item frames/armor stands
                             // so we only have to run the check as if there had been an explosion at the damager location
@@ -253,7 +251,9 @@ public class FactionsEntityListener implements Listener {
         }
     }
 
-    public void cancelFStuckTeleport(Player player) {
+    public void
+
+    cancelFStuckTeleport(Player player) {
         if (player == null) return;
 
         UUID uuid = player.getUniqueId();
@@ -308,31 +308,45 @@ public class FactionsEntityListener implements Listener {
 
     private boolean checkExplosionForBlock(Entity boomer, Block block) {
         Faction faction = Board.getInstance().getFactionAt(FLocation.wrap(block.getLocation()));
-
-        if (faction.noExplosionsInTerritory() || (faction.isPeaceful() && Conf.peacefulTerritoryDisableBoom))
-            return false;
-        // faction is peaceful and has explosions set to disabled
-
         boolean online = faction.hasPlayersOnline();
+        String worldName = block.getWorld().getName();
+        boolean inNoWildernessProtection = Conf.worldsNoWildernessProtection.contains(worldName);
+        boolean useWhitelist = Conf.useWorldConfigurationsAsWhitelist;
 
-        if (boomer instanceof Creeper && ((faction.isWilderness() && Conf.wildernessBlockCreepers && ((!Conf.worldsNoWildernessProtection.contains(block.getWorld().getName()) && !Conf.useWorldConfigurationsAsWhitelist) || (Conf.worldsNoWildernessProtection.contains(block.getWorld().getName()) && Conf.useWorldConfigurationsAsWhitelist)) ) ||
-                (faction.isNormal() && (online ? Conf.territoryBlockCreepers : Conf.territoryBlockCreepersWhenOffline)) ||
-                (faction.isWarZone() && Conf.warZoneBlockCreepers) ||
-                faction.isSafeZone())) {
-            // creeper which needs prevention
+        if (faction.noExplosionsInTerritory() || (faction.isPeaceful() && Conf.peacefulTerritoryDisableBoom)) {
             return false;
-        } else if (
-            // it's a bit crude just using fireball protection for Wither boss too, but I'd rather not add in a whole new set of xxxBlockWitherExplosion or whatever
-                (boomer instanceof Fireball || boomer instanceof Wither) && (faction.isWilderness() && Conf.wildernessBlockFireballs && ((!Conf.worldsNoWildernessProtection.contains(block.getWorld().getName()) && !Conf.useWorldConfigurationsAsWhitelist) || (Conf.worldsNoWildernessProtection.contains(block.getWorld().getName()) && Conf.useWorldConfigurationsAsWhitelist)) || faction.isNormal() && (online ? Conf.territoryBlockFireballs : Conf.territoryBlockFireballsWhenOffline) || faction.isWarZone() && Conf.warZoneBlockFireballs || faction.isSafeZone())) {
-            // ghast fireball which needs prevention
-            return false;
-        } else
-            return (!(boomer instanceof TNTPrimed) && !(boomer instanceof ExplosiveMinecart)) || ((!faction.isWilderness() || !Conf.wildernessBlockTNT || ((Conf.worldsNoWildernessProtection.contains(block.getWorld().getName()) && !Conf.useWorldConfigurationsAsWhitelist) || (!Conf.worldsNoWildernessProtection.contains(block.getWorld().getName()) && Conf.useWorldConfigurationsAsWhitelist)) ) &&
-                    (!faction.isNormal() || (online ? !Conf.territoryBlockTNT : !Conf.territoryBlockTNTWhenOffline)) &&
-                    (!faction.isWarZone() || !Conf.warZoneBlockTNT) &&
-                    (!faction.isSafeZone() || !Conf.safeZoneBlockTNT));
+        }
 
-        // No condition retained, destroy the block!
+        if (boomer instanceof Creeper) {
+            if (faction.isWilderness() && Conf.wildernessBlockCreepers &&
+                    ((!inNoWildernessProtection && !useWhitelist) || (inNoWildernessProtection && useWhitelist))) {
+                return false;
+            } else if (faction.isNormal() && (online ? Conf.territoryBlockCreepers : Conf.territoryBlockCreepersWhenOffline)) {
+                return false;
+            } else if (faction.isWarZone() && Conf.warZoneBlockCreepers) {
+                return false;
+            } else return !faction.isSafeZone();
+        } else if (boomer instanceof Fireball || boomer instanceof Wither) {
+            if (faction.isWilderness() && Conf.wildernessBlockFireballs &&
+                    ((!inNoWildernessProtection && !useWhitelist) || (inNoWildernessProtection && useWhitelist))) {
+                return false;
+            } else if (faction.isNormal() && (online ? Conf.territoryBlockFireballs : Conf.territoryBlockFireballsWhenOffline)) {
+                return false;
+            } else if (faction.isWarZone() && Conf.warZoneBlockFireballs) {
+                return false;
+            } else return !faction.isSafeZone();
+        } else if (boomer instanceof TNTPrimed || boomer instanceof ExplosiveMinecart) {
+            if (faction.isWilderness() && Conf.wildernessBlockTNT &&
+                    ((!inNoWildernessProtection && useWhitelist) || (inNoWildernessProtection && !useWhitelist))) {
+                return false;
+            } else if (faction.isNormal() && (online ? Conf.territoryBlockTNT : Conf.territoryBlockTNTWhenOffline)) {
+                return false;
+            } else if (faction.isWarZone() && Conf.warZoneBlockTNT) {
+                return false;
+            } else return !faction.isSafeZone() || !Conf.safeZoneBlockTNT;
+        }
+
+        return true; // No condition retained, destroy the block!
     }
 
     // mainly for flaming arrows; don't want allies or people in safe zones to be ignited even after damage event is cancelled
@@ -390,119 +404,166 @@ public class FactionsEntityListener implements Listener {
         Entity damager = sub.getDamager();
         Entity damagee = sub.getEntity();
 
-        if (!(damagee instanceof Player) || damagee.hasMetadata("NPC"))
+        if (!(damagee instanceof Player) || damagee.hasMetadata("NPC")) {
             return true;
+        }
 
         Player defenderPlayer = (Player) damagee;
         FPlayer defender = FPlayers.getInstance().getByPlayer(defenderPlayer);
 
-        if (defender == null || defender.getPlayer() == null)
+        if (defender == null || defender.getPlayer() == null) {
             return true;
+        }
 
         Faction defLocFaction = Board.getInstance().getFactionAt(FLocation.wrap(defenderPlayer.getLocation()));
 
         if (damager instanceof Projectile) {
             Projectile projectile = (Projectile) damager;
-            if (!(projectile.getShooter() instanceof Entity))
+            if (!(projectile.getShooter() instanceof Entity)) {
                 return true;
+            }
             damager = (Entity) projectile.getShooter();
         }
 
-        if (damager == damagee)
+        if (damager == damagee) {
             return true; // Ender pearl usage and other self-inflicted damage
-
-        if (defLocFaction.noPvPInTerritory()) {
-            if (damager instanceof Player) {
-                if (notify) {
-                    FPlayer attacker = FPlayers.getInstance().getByPlayer((Player) damager);
-                    attacker.msg(TL.PLAYER_CANTHURT, (defLocFaction.isSafeZone() ? TL.REGION_SAFEZONE.toString() : TL.REGION_PEACEFUL.toString()));
-                }
-                return false;
-            }
-            return !defLocFaction.noMonstersInTerritory();
         }
 
-        if (!(damager instanceof Player))
+        if (defLocFaction.noPvPInTerritory()) {
+            return handleNoPvPTerritory(damager, notify, defLocFaction);
+        }
+
+        if (!(damager instanceof Player)) {
             return true;
+        }
 
         Player attackerPlayer = (Player) damager;
         FPlayer attacker = FPlayers.getInstance().getByPlayer(attackerPlayer);
 
-        if (attacker == null || attacker.getPlayer() == null)
+        if (attacker == null || attacker.getPlayer() == null) {
             return true;
-
-        if (attacker.getRelationTo(defender.getFaction()).isAtLeast(Relation.TRUCE) && attacker.getFaction().isNormal() && defender.getFaction().isNormal()) {
-            if (attacker.hasFriendlyFire() && defender.hasFriendlyFire())
-                return true;
-            if (attacker.hasFriendlyFire() && !defender.hasFriendlyFire()) {
-                attacker.msg(TL.FRIENDLY_FIRE_OFF_ATTACKER, defender.getName());
-                return false;
-            } else if (!attacker.hasFriendlyFire() && defender.hasFriendlyFire()) {
-                attacker.msg(TL.FRIENDLY_FIRE_YOU_MUST);
-                return false;
-            }
         }
 
-        if (Conf.playersWhoBypassAllProtection.contains(attacker.getName()))
+        if (handleFriendlyFire(attacker, defender, notify)) {
+            return false;
+        }
+
+        if (Conf.playersWhoBypassAllProtection.contains(attacker.getName())) {
             return true;
+        }
 
         if (attacker.hasLoginPvpDisabled()) {
-            if (notify)
+            if (notify) {
                 attacker.msg(TL.PLAYER_PVP_LOGIN, Conf.noPVPDamageToOthersForXSecondsAfterLogin);
+            }
             return false;
         }
 
         Faction locFaction = Board.getInstance().getFactionAt(FLocation.wrap(attackerPlayer.getLocation()));
 
         if (locFaction.noPvPInTerritory()) {
-            if (notify)
-                attacker.msg(TL.PLAYER_CANTHURT, (locFaction.isSafeZone() ? TL.REGION_SAFEZONE.toString() : TL.REGION_PEACEFUL.toString()));
+            if (notify) {
+                attacker.msg(TL.PLAYER_CANTHURT, locFaction.isSafeZone() ? TL.REGION_SAFEZONE.toString() : TL.REGION_PEACEFUL.toString());
+            }
             return false;
         }
 
-        if (locFaction.isWarZone() && Conf.warZoneFriendlyFire)
+        if (locFaction.isWarZone() && Conf.warZoneFriendlyFire) {
             return true;
-        if ((Conf.worldsIgnorePvP.contains(defenderPlayer.getWorld().getName()) && !Conf.useWorldConfigurationsAsWhitelist) || (!Conf.worldsIgnorePvP.contains(defenderPlayer.getWorld().getName()) && Conf.useWorldConfigurationsAsWhitelist))
-            return true;
+        }
 
+        if (isWorldIgnoringPvP(defenderPlayer.getWorld().getName())) {
+            return true;
+        }
+
+        return handleFactionLogic(attacker, defender, defLocFaction, notify);
+    }
+
+    private boolean handleNoPvPTerritory(Entity damager, boolean notify, Faction defLocFaction) {
+        if (damager instanceof Player) {
+            if (notify) {
+                FPlayer attacker = FPlayers.getInstance().getByPlayer((Player) damager);
+                attacker.msg(TL.PLAYER_CANTHURT, defLocFaction.isSafeZone() ? TL.REGION_SAFEZONE.toString() : TL.REGION_PEACEFUL.toString());
+            }
+            return false;
+        }
+        return !defLocFaction.noMonstersInTerritory();
+    }
+
+    private boolean handleFriendlyFire(FPlayer attacker, FPlayer defender, boolean notify) {
+        if (attacker.getRelationTo(defender.getFaction()).isAtLeast(Relation.TRUCE) &&
+                attacker.getFaction().isNormal() && defender.getFaction().isNormal()) {
+
+            if (attacker.hasFriendlyFire() && defender.hasFriendlyFire()) {
+                return false;
+            }
+            if (attacker.hasFriendlyFire() && !defender.hasFriendlyFire()) {
+                if (notify) {
+                    attacker.msg(TL.FRIENDLY_FIRE_OFF_ATTACKER, defender.getName());
+                }
+                return true;
+            } else if (!attacker.hasFriendlyFire() && defender.hasFriendlyFire()) {
+                if (notify) {
+                    attacker.msg(TL.FRIENDLY_FIRE_YOU_MUST);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isWorldIgnoringPvP(String worldName) {
+        return (Conf.worldsIgnorePvP.contains(worldName) && !Conf.useWorldConfigurationsAsWhitelist) ||
+                (!Conf.worldsIgnorePvP.contains(worldName) && Conf.useWorldConfigurationsAsWhitelist);
+    }
+
+    private boolean handleFactionLogic(FPlayer attacker, FPlayer defender, Faction defLocFaction, boolean notify) {
         Faction defendFaction = defender.getFaction();
         Faction attackFaction = attacker.getFaction();
 
         if (attackFaction.isWilderness() && Conf.disablePVPForFactionlessPlayers) {
-            if (notify)
+            if (notify) {
                 attacker.msg(TL.PLAYER_PVP_REQUIREFACTION);
+            }
             return false;
-        } else if (defendFaction.isWilderness()) {
+        }
+
+        if (defendFaction.isWilderness()) {
             if (defLocFaction == attackFaction && Conf.enablePVPAgainstFactionlessInAttackersLand) {
-                // Allow PVP vs. Factionless in attacker's faction territory
-                return true;
-            } else if (Conf.disablePVPForFactionlessPlayers) {
-                if (notify)
+                return true; // Allow PVP vs. Factionless in attacker's faction territory
+            }
+            if (Conf.disablePVPForFactionlessPlayers) {
+                if (notify) {
                     attacker.msg(TL.PLAYER_PVP_FACTIONLESS);
+                }
                 return false;
             }
         }
 
         if (defendFaction.isPeaceful() || attackFaction.isPeaceful()) {
-            if (notify)
+            if (notify) {
                 attacker.msg(TL.PLAYER_PVP_PEACEFUL);
+            }
             return false;
         }
 
         Relation relation = defendFaction.getRelationTo(attackFaction);
 
         if (Conf.disablePVPBetweenNeutralFactions && relation.isNeutral()) {
-            if (notify)
+            if (notify) {
                 attacker.msg(TL.PLAYER_PVP_NEUTRAL);
+            }
             return false;
         }
 
-        if (!defender.hasFaction())
+        if (!defender.hasFaction()) {
             return true;
+        }
 
         if (relation.isMember() || relation.isAlly()) {
-            if (notify)
+            if (notify) {
                 attacker.msg(TL.PLAYER_PVP_CANTHURT, defender.describeTo(attacker));
+            }
             return false;
         }
 
@@ -521,9 +582,6 @@ public class FactionsEntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onCreatureSpawn(CreatureSpawnEvent event) {
-        if (event.getLocation() == null) return;
-
-
         if (Conf.safeZoneNerfedCreatureTypes.contains(event.getEntityType()) && Board.getInstance().getFactionAt(FLocation.wrap(event.getLocation())).noMonstersInTerritory()) {
             event.setCancelled(true);
         }
