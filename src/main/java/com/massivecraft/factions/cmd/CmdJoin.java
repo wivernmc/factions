@@ -1,37 +1,41 @@
 package com.massivecraft.factions.cmd;
 
 import com.massivecraft.factions.*;
+import com.massivecraft.factions.cmd.roster.struct.RosterPlayer;
+import com.massivecraft.factions.cmd.roster.struct.RosterPlayerManager;
 import com.massivecraft.factions.event.FPlayerJoinEvent;
 import com.massivecraft.factions.struct.Permission;
 import com.massivecraft.factions.util.Logger;
 import com.massivecraft.factions.zcore.util.TL;
 import org.bukkit.Bukkit;
 
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.UUID;
+
 public class CmdJoin extends FCommand {
 
     public CmdJoin() {
         super();
-        this.aliases.addAll(Aliases.join);
-        this.requiredArgs.add("faction name");
-        this.optionalArgs.put("player", "you");
+        this.getAliases().addAll(Aliases.join);
+        this.getRequiredArgs().add("faction name");
+        this.getOptionalArgs().put("player", "you");
 
-        this.requirements = new CommandRequirements.Builder(Permission.JOIN)
+        this.setRequirements(new CommandRequirements.Builder(Permission.JOIN)
                 .playerOnly()
-                .build();
+                .build());
     }
 
     @Override
     public void perform(CommandContext context) {
         FactionsPlugin.getInstance().getServer().getScheduler().runTaskAsynchronously(FactionsPlugin.instance, () -> {
 
-
             Faction faction = context.argAsFaction(0);
-            if (faction == null) {
-                return;
-            }
-
+            if (faction == null) return;
             FPlayer fplayer = context.argAsBestFPlayerMatch(1, context.fPlayer, false);
             boolean samePlayer = fplayer == context.fPlayer;
+
+            boolean useRoster = FactionsPlugin.getInstance().getFileManager().getRoster().fetchBoolean("use-roster-system");
 
             if (!samePlayer && !Permission.JOIN_OTHERS.has(context.sender, false)) {
                 context.msg(TL.COMMAND_JOIN_CANNOTFORCE);
@@ -63,16 +67,17 @@ public class CmdJoin extends FCommand {
                 return;
             }
 
-            if (!(faction.getOpen() || faction.isInvited(fplayer) || context.fPlayer.isAdminBypassing() || Permission.JOIN_ANY.has(context.sender, false))) {
-                context.msg(TL.COMMAND_JOIN_REQUIRESINVITATION);
-                if (samePlayer) {
-                    faction.msg(TL.COMMAND_JOIN_ATTEMPTEDJOIN, fplayer.describeTo(faction, true));
+            if (!useRoster) {
+                if (!(faction.getOpen() || faction.isInvited(fplayer) || context.fPlayer.isAdminBypassing() || Permission.JOIN_ANY.has(context.sender, false))) {
+                    context.msg(TL.COMMAND_JOIN_REQUIRESINVITATION);
+                    if (samePlayer) {
+                        faction.msg(TL.COMMAND_JOIN_ATTEMPTEDJOIN, fplayer.describeTo(faction, true));
+                    }
+                    return;
                 }
-                return;
             }
 
             int altLimit = Conf.factionAltMemberLimit;
-
             if (altLimit > 0 && faction.getAltPlayers().size() >= altLimit && faction.altInvited(context.fPlayer)) {
                 context.msg(TL.COMMAND_JOIN_ATLIMIT_ALTS, faction.getTag(context.fPlayer), altLimit, fplayer.describeTo(context.fPlayer, false));
                 return;
@@ -87,6 +92,47 @@ public class CmdJoin extends FCommand {
             if (!context.fPlayer.isAdminBypassing() && faction.isBanned(context.fPlayer)) {
                 context.msg(TL.COMMAND_JOIN_BANNED, faction.getTag(context.fPlayer));
                 return;
+            }
+
+            if (useRoster) {
+                RosterPlayer rosterPlayer = RosterPlayerManager.getRosterPlayerFromUUID(context.player.getUniqueId(), faction);
+                if (rosterPlayer == null) {
+                    fplayer.msg(TL.COMMAND_JOIN_NOT_IN_ROSTER);
+                    return;
+                }
+
+                if (rosterPlayer.isOnJoinCooldown()) {
+                    fplayer.msg(TL.COMMAND_JOIN_ROSTER_JOIN_COOLDOWN);
+                    return;
+                }
+
+                int limit = getFactionMemberLimit(faction);
+
+                // Check if faction has either available slots or offline players
+                if (faction.getOnlinePlayers().size() == limit) {
+                    fplayer.msg(TL.COMMAND_JOIN_ROSTER_JOIN_NO_ROOM_ONLINE);
+                    return;
+                }
+
+                if (FactionsPlugin.getInstance().getFileManager().getRoster().fetchBoolean("rotate-offline-players")) {
+                    if(faction.getOnlinePlayers().size() != limit) {
+                        if (faction.getSize() == limit) {
+                            Optional<FPlayer> foundSwap = faction.getFPlayers().stream().filter(fPlayer -> !fPlayer.getPlayer().isOnline())
+                                    .min(Comparator.comparingLong(FPlayer::getLastLogoutTime));
+                            if (foundSwap.isPresent()) {
+                                foundSwap.get().resetFactionData();
+                            } else {
+                                fplayer.msg(TL.COMMAND_JOIN_ROSTER_JOIN_NO_REPLACEMENT_FOUND);
+                                return;
+                            }
+                        }
+                    }
+                } else {
+                    fplayer.msg(TL.COMMAND_JOIN_ROSTER_JOIN_NO_ROOM_FULL);
+                    return;
+                }
+
+                rosterPlayer.setLastJoinTime(System.currentTimeMillis());
             }
 
             // Cannot asynchronously call events
@@ -121,7 +167,13 @@ public class CmdJoin extends FCommand {
                 }
 
                 faction.deinvite(fplayer);
-                context.fPlayer.setRole(faction.getDefaultRole());
+
+                if (!useRoster) {
+                    context.fPlayer.setRole(faction.getDefaultRole());
+                } else {
+                    RosterPlayer rosterPlayer = RosterPlayerManager.getRosterPlayerFromUUID(context.player.getUniqueId(), faction);
+                    context.fPlayer.setRole(rosterPlayer.getRole());
+                }
 
                 if (Conf.logFactionJoin) {
                     if (samePlayer) {

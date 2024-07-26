@@ -1,5 +1,6 @@
 package com.massivecraft.factions.cmd;
 
+import com.massivecraft.factions.Conf;
 import com.massivecraft.factions.FactionsPlugin;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -27,20 +28,21 @@ public class BrigadierManager {
     public void build() {
         commodore.register(brigadier.build());
 
-        // Register 'f' alias with all children of 'factions'
-        LiteralArgumentBuilder<Object> fLiteral = LiteralArgumentBuilder.literal("f");
-        for (CommandNode<Object> node : brigadier.getArguments()) {
-
-            fLiteral.then(node);
+        // Register aliases with all children of 'factions'
+        for (String alias : Conf.baseCommandAliases) {
+            LiteralArgumentBuilder<Object> aliasLiteral = LiteralArgumentBuilder.literal(alias);
+            for (CommandNode<Object> node : brigadier.getArguments()) {
+                aliasLiteral.then(node);
+            }
+            commodore.register(aliasLiteral.build());
         }
-        commodore.register(fLiteral.build());
     }
 
     public void addSubCommand(FCommand subCommand) {
-        for (String alias : subCommand.aliases) {
+        for (String alias : subCommand.getAliases()) {
             LiteralArgumentBuilder<Object> literal = LiteralArgumentBuilder.literal(alias);
 
-            if (subCommand.requirements.getBrigadier() != null) {
+            if (subCommand.getRequirements().getBrigadier() != null) {
                 registerUsingProvider(subCommand, literal);
             } else {
                 registerGeneratedBrigadier(subCommand, literal);
@@ -49,7 +51,7 @@ public class BrigadierManager {
     }
 
     private void registerUsingProvider(FCommand subCommand, LiteralArgumentBuilder<Object> literal) {
-        Class<? extends BrigadierProvider> brigadierProvider = subCommand.requirements.getBrigadier();
+        Class<? extends BrigadierProvider> brigadierProvider = subCommand.getRequirements().getBrigadier();
         try {
             Constructor<? extends BrigadierProvider> constructor = brigadierProvider.getDeclaredConstructor();
             brigadier.then(constructor.newInstance().get(literal));
@@ -79,13 +81,13 @@ public class BrigadierManager {
     }
 
     private List<RequiredArgumentBuilder<Object, ?>> generateArgsStack(FCommand subCommand) {
-        List<RequiredArgumentBuilder<Object, ?>> stack = new ArrayList<>(subCommand.requiredArgs.size() + subCommand.optionalArgs.size());
+        List<RequiredArgumentBuilder<Object, ?>> stack = new ArrayList<>(subCommand.getRequiredArgs().size() + subCommand.getOptionalArgs().size());
 
-        for (String required : subCommand.requiredArgs) {
+        for (String required : subCommand.getRequiredArgs()) {
             stack.add(RequiredArgumentBuilder.argument(required, StringArgumentType.word()));
         }
 
-        for (Map.Entry<String, String> optionalEntry : subCommand.optionalArgs.entrySet()) {
+        for (Map.Entry<String, String> optionalEntry : subCommand.getOptionalArgs().entrySet()) {
             RequiredArgumentBuilder<Object, ?> optional;
             if (optionalEntry.getKey().equalsIgnoreCase(optionalEntry.getValue())) {
                 optional = RequiredArgumentBuilder.argument(":" + optionalEntry.getKey(), StringArgumentType.word());
