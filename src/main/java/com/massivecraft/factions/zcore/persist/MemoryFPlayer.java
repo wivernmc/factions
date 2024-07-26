@@ -807,7 +807,7 @@ public abstract class MemoryFPlayer implements FPlayer {
 
         boolean perm = myFaction.isPermanent();
 
-        if (!perm && this.getRole() == Role.LEADER && myFaction.getFPlayers().size() > 1) {
+        if (!perm && this.getRole() == Role.LEADER && myFaction.getFPlayers().size() == 1) {
             msg(TL.LEAVE_PASSADMIN);
             return;
         }
