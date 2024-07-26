@@ -11,7 +11,6 @@ import org.bukkit.Bukkit;
 
 import java.util.Comparator;
 import java.util.Optional;
-import java.util.UUID;
 
 public class CmdJoin extends FCommand {
 
@@ -32,6 +31,7 @@ public class CmdJoin extends FCommand {
 
             Faction faction = context.argAsFaction(0);
             if (faction == null) return;
+
             FPlayer fplayer = context.argAsBestFPlayerMatch(1, context.fPlayer, false);
             boolean samePlayer = fplayer == context.fPlayer;
 
@@ -48,7 +48,7 @@ public class CmdJoin extends FCommand {
             }
 
             if (faction == fplayer.getFaction()) {
-                context.msg(TL.COMMAND_JOIN_ALREADYMEMBER, fplayer.describeTo(context.fPlayer, true), (samePlayer ? "are" : "is"), faction.getTag(context.fPlayer));
+                context.msg(TL.COMMAND_JOIN_ALREADYMEMBER, fplayer.describeTo(context.fPlayer, true), samePlayer ? "are" : "is", faction.getTag(context.fPlayer));
                 return;
             }
 
@@ -58,7 +58,7 @@ public class CmdJoin extends FCommand {
             }
 
             if (fplayer.hasFaction()) {
-                context.msg(TL.COMMAND_JOIN_INOTHERFACTION, fplayer.describeTo(context.fPlayer, true), (samePlayer ? "your" : "their"));
+                context.msg(TL.COMMAND_JOIN_INOTHERFACTION, fplayer.describeTo(context.fPlayer, true), samePlayer ? "your" : "their");
                 return;
             }
 
@@ -83,12 +83,10 @@ public class CmdJoin extends FCommand {
                 return;
             }
 
-            // if economy is enabled, they're not on the bypass list, and this command has a cost set, make sure they can pay
             if (samePlayer && !context.canAffordCommand(Conf.econCostJoin, TL.COMMAND_JOIN_TOJOIN.toString())) {
                 return;
             }
 
-            // Check for ban
             if (!context.fPlayer.isAdminBypassing() && faction.isBanned(context.fPlayer)) {
                 context.msg(TL.COMMAND_JOIN_BANNED, faction.getTag(context.fPlayer));
                 return;
@@ -108,16 +106,16 @@ public class CmdJoin extends FCommand {
 
                 int limit = getFactionMemberLimit(faction);
 
-                // Check if faction has either available slots or offline players
                 if (faction.getOnlinePlayers().size() == limit) {
                     fplayer.msg(TL.COMMAND_JOIN_ROSTER_JOIN_NO_ROOM_ONLINE);
                     return;
                 }
 
                 if (FactionsPlugin.getInstance().getFileManager().getRoster().fetchBoolean("rotate-offline-players")) {
-                    if(faction.getOnlinePlayers().size() != limit) {
+                    if (faction.getOnlinePlayers().size() != limit) {
                         if (faction.getSize() == limit) {
-                            Optional<FPlayer> foundSwap = faction.getFPlayers().stream().filter(fPlayer -> !fPlayer.getPlayer().isOnline())
+                            Optional<FPlayer> foundSwap = faction.getFPlayers().stream()
+                                    .filter(fPlayer -> !fPlayer.getPlayer().isOnline())
                                     .min(Comparator.comparingLong(FPlayer::getLastLogoutTime));
                             if (foundSwap.isPresent()) {
                                 foundSwap.get().resetFactionData();
@@ -135,16 +133,13 @@ public class CmdJoin extends FCommand {
                 rosterPlayer.setLastJoinTime(System.currentTimeMillis());
             }
 
-            // Cannot asynchronously call events
             FactionsPlugin.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(FactionsPlugin.getInstance(), () -> {
-                // trigger the join event (cancellable)
                 FPlayerJoinEvent joinEvent = new FPlayerJoinEvent(FPlayers.getInstance().getByPlayer(context.player), faction, FPlayerJoinEvent.PlayerJoinReason.COMMAND);
                 Bukkit.getServer().getPluginManager().callEvent(joinEvent);
                 if (joinEvent.isCancelled()) {
                     return;
                 }
 
-                // then make 'em pay (if applicable)
                 if (samePlayer && !context.payForCommand(Conf.econCostJoin, TL.COMMAND_JOIN_TOJOIN.toString(), TL.COMMAND_JOIN_FORJOIN.toString())) {
                     return;
                 }
@@ -186,9 +181,12 @@ public class CmdJoin extends FCommand {
         });
     }
 
-    private int getFactionMemberLimit(Faction f) {
-        if (f.getUpgrade("Members") == 0) return Conf.factionMemberLimit;
-        return Conf.factionMemberLimit + FactionsPlugin.getInstance().getFileManager().getUpgrades().getConfig().getInt("fupgrades.MainMenu.Members.Members-Limit.level-" + f.getUpgrade("Members"));
+    private int getFactionMemberLimit(Faction faction) {
+        if (faction.getUpgrade("Members") == 0) {
+            return Conf.factionMemberLimit;
+        }
+        return Conf.factionMemberLimit + FactionsPlugin.getInstance().getFileManager().getUpgrades().getConfig()
+                .getInt("fupgrades.MainMenu.Members.Members-Limit.level-" + faction.getUpgrade("Members"));
     }
 
     @Override
@@ -196,4 +194,3 @@ public class CmdJoin extends FCommand {
         return TL.COMMAND_JOIN_DESCRIPTION;
     }
 }
-
