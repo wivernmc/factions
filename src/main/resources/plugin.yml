@@ -1,6 +1,6 @@
 name: Factions
-prefix: SaberFactions
-version: ${project.version}
+prefix: ${pluginName}
+version: '${version}'
 api-version: 1.13
 main: com.massivecraft.factions.FactionsPlugin
 authors: [Olof Larsson, Brett Flannigan, drtshock, ProSavage, DroppingAnvil, Driftay, SaberDev, Callum, Atilt]
