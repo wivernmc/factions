@@ -109,7 +109,7 @@ dependencies {
 
 }
 
-val pluginName = "Wivern" + project.name.capitalize()
+val pluginName = "Wivern" + project.name.split("-").joinToString("") { it.capitalize() }
 tasks.processResources {
 
     filteringCharset = "UTF-8"
